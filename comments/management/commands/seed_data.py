@@ -1,14 +1,10 @@
-import os
-import django
-from django.core.files import File
-
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'bicimexBackend.settings')
-django.setup()
-
+from django.core.management.base import BaseCommand
+from django.contrib.auth.models import User
+from comments.models import UserProfile, Feedback, Comment
 from django.contrib.auth.models import User
 from comments.models import UserProfile, Feedback, Comment 
 
-# Embebido directamente:
+
 data = {
   "currentUser": {
     "image": "./assets/user-images/image-zena.jpg",
@@ -312,18 +308,17 @@ data = {
   ]
 }
 
+# Funciones auxiliares:
 def get_or_create_user(user_data):
-    # Primero crea/obtiene el User de Django
     user, _ = User.objects.get_or_create(
         username=user_data['username'],
         defaults={
             'first_name': user_data['name'].split()[0],
             'last_name': ' '.join(user_data['name'].split()[1:]),
-            'password': 'temp_password123'  # Contraseña temporal
+            'password': 'temp_password123'
         }
     )
-    
-    # Luego crea/obtiene el UserProfile
+
     profile, _ = UserProfile.objects.get_or_create(
         user=user,
         defaults={
@@ -333,48 +328,46 @@ def get_or_create_user(user_data):
         }
     )
     return profile
-def seed():
-    print("Seeding data...")
-    
-    # Crear current user primero
-    current_user = get_or_create_user(data['currentUser'])
-    
-    for pr in data['productRequests']:
-        feedback = Feedback.objects.create(
-            title=pr['title'],
-            description=pr['description'],
-            category=pr['category'],
-            status=pr['status'],
-            upvotes=pr['upvotes'],
-            author=current_user.user  # Usamos el User, no el Profile
-        )
 
-        # Procesar comentarios
-        for comment_data in pr.get('comments', []):
-            comment_user = get_or_create_user(comment_data['user'])
-            
-            comment = Comment.objects.create(
-                content=comment_data['content'],
-                user=comment_user.user,  # User de Django
-                feedback=feedback,
-                parent_comment=None,
-                replying_to=None
+class Command(BaseCommand):
+    help = 'Seeds the database with initial feedback/comments data'
+
+    def handle(self, *args, **kwargs):
+        print("Seeding data...")
+
+        current_user = get_or_create_user(data['currentUser'])
+
+        for pr in data['productRequests']:
+            feedback = Feedback.objects.create(
+                title=pr['title'],
+                description=pr['description'],
+                category=pr['category'],
+                status=pr['status'],
+                upvotes=pr['upvotes'],
+                author=current_user.user
             )
 
-            # Procesar respuestas (replies)
-            for reply_data in comment_data.get('replies', []):
-                reply_user = get_or_create_user(reply_data['user'])
-                replying_to_user = User.objects.get(username=reply_data['replyingTo'])
-                
-                Comment.objects.create(
-                    content=reply_data['content'],
-                    user=reply_user.user,
+            for comment_data in pr.get('comments', []):
+                comment_user = get_or_create_user(comment_data['user'])
+
+                comment = Comment.objects.create(
+                    content=comment_data['content'],
+                    user=comment_user.user,
                     feedback=feedback,
-                    parent_comment=comment,
-                    replying_to=replying_to_user
+                    parent_comment=None,
+                    replying_to=None
                 )
 
-    print("Seeding complete!")
+                for reply_data in comment_data.get('replies', []):
+                    reply_user = get_or_create_user(reply_data['user'])
+                    replying_to_user = User.objects.get(username=reply_data['replyingTo'])
 
-if __name__ == "__main__":
-    seed()
+                    Comment.objects.create(
+                        content=reply_data['content'],
+                        user=reply_user.user,
+                        feedback=feedback,
+                        parent_comment=comment,
+                        replying_to=replying_to_user
+                    )
+
+        print("Seeding complete!")

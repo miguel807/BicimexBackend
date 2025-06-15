@@ -7,4 +7,4 @@ python manage.py collectstatic --no-input
 
 python manage.py migrate
 
-python manage.py shell < comments/seed_data.py
+python manage.py seed_data
