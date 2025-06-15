@@ -313,7 +313,6 @@ data = {
   ]
 }
 
-
 def get_or_create_user(user_data):
     user, _ = User.objects.get_or_create(
         username=user_data['username'],
@@ -325,15 +324,13 @@ def get_or_create_user(user_data):
     )
     
     profile, _ = UserProfile.objects.get_or_create(
-    username=user_data['username'],
-    defaults={
-        'name': user_data['name'],
-        'image': user_data['image']
-    }
-)
-
+        username=user_data['username'],
+        defaults={
+            'name': user_data['name'],
+            'image': user_data['image']
+        }
+    )
     return profile
-
 
 class Command(BaseCommand):
     help = 'Seed the database with sample feedback and comments'
@@ -366,14 +363,15 @@ class Command(BaseCommand):
 
                 for reply_data in comment_data.get('replies', []):
                     reply_user = get_or_create_user(reply_data['user'])
-                    replying_to_user = User.objects.get(username=reply_data['replyingTo'])
+                  
+                    replying_to_profile = UserProfile.objects.get(username=reply_data['replyingTo'])
 
                     Comment.objects.create(
                         content=reply_data['content'],
                         user=reply_user,
                         feedback=feedback,
                         parent_comment=comment,
-                        replying_to=replying_to_user
+                        replying_to=replying_to_profile  
                     )
 
         self.stdout.write(self.style.SUCCESS("✅ Seeding complete!"))
