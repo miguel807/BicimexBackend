@@ -307,27 +307,16 @@ data = {
     }
   ]
 }
-
-# Funciones auxiliares:
 def get_or_create_user(user_data):
-    user, _ = User.objects.get_or_create(
+    profile, _ = UserProfile.objects.get_or_create(
         username=user_data['username'],
         defaults={
-            'first_name': user_data['name'].split()[0],
-            'last_name': ' '.join(user_data['name'].split()[1:]),
-            'password': 'temp_password123'
-        }
-    )
-
-    profile, _ = UserProfile.objects.get_or_create(
-        user=user,
-        defaults={
-            'username': user_data['username'],
             'name': user_data['name'],
             'image': user_data['image']
         }
     )
     return profile
+
 
 class Command(BaseCommand):
     help = 'Seeds the database with initial feedback/comments data'
@@ -344,7 +333,7 @@ class Command(BaseCommand):
                 category=pr['category'],
                 status=pr['status'],
                 upvotes=pr['upvotes'],
-                author=current_user.user
+                author=current_user
             )
 
             for comment_data in pr.get('comments', []):
