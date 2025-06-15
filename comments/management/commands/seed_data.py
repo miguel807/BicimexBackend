@@ -350,7 +350,7 @@ class Command(BaseCommand):
                 category=pr['category'],
                 status=pr['status'],
                 upvotes=pr['upvotes'],
-                author=current_user.user
+                author=current_user
             )
 
             for comment_data in pr.get('comments', []):
@@ -358,7 +358,7 @@ class Command(BaseCommand):
 
                 comment = Comment.objects.create(
                     content=comment_data['content'],
-                    user=comment_user.user,
+                    user=comment_user,
                     feedback=feedback,
                     parent_comment=None,
                     replying_to=None
@@ -370,7 +370,7 @@ class Command(BaseCommand):
 
                     Comment.objects.create(
                         content=reply_data['content'],
-                        user=reply_user.user,
+                        user=reply_user,
                         feedback=feedback,
                         parent_comment=comment,
                         replying_to=replying_to_user
