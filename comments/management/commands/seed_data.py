@@ -1,10 +1,15 @@
+import os
 from django.core.management.base import BaseCommand
 from django.contrib.auth.models import User
 from comments.models import UserProfile, Feedback, Comment
+
+
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'bicimexBackend.settings')
+
 from django.contrib.auth.models import User
 from comments.models import UserProfile, Feedback, Comment 
 
-
+# Embebido directamente:
 data = {
   "currentUser": {
     "image": "./assets/user-images/image-zena.jpg",
@@ -307,10 +312,22 @@ data = {
     }
   ]
 }
+
+
 def get_or_create_user(user_data):
-    profile, _ = UserProfile.objects.get_or_create(
+    user, _ = User.objects.get_or_create(
         username=user_data['username'],
         defaults={
+            'first_name': user_data['name'].split()[0],
+            'last_name': ' '.join(user_data['name'].split()[1:]),
+            'password': 'temp_password123'
+        }
+    )
+    
+    profile, _ = UserProfile.objects.get_or_create(
+        user=user,
+        defaults={
+            'username': user_data['username'],
             'name': user_data['name'],
             'image': user_data['image']
         }
@@ -319,10 +336,10 @@ def get_or_create_user(user_data):
 
 
 class Command(BaseCommand):
-    help = 'Seeds the database with initial feedback/comments data'
+    help = 'Seed the database with sample feedback and comments'
 
     def handle(self, *args, **kwargs):
-        print("Seeding data...")
+        self.stdout.write("Seeding data...")
 
         current_user = get_or_create_user(data['currentUser'])
 
@@ -333,7 +350,7 @@ class Command(BaseCommand):
                 category=pr['category'],
                 status=pr['status'],
                 upvotes=pr['upvotes'],
-                author=current_user
+                author=current_user.user
             )
 
             for comment_data in pr.get('comments', []):
@@ -359,4 +376,4 @@ class Command(BaseCommand):
                         replying_to=replying_to_user
                     )
 
-        print("Seeding complete!")
+        self.stdout.write(self.style.SUCCESS("✅ Seeding complete!"))
