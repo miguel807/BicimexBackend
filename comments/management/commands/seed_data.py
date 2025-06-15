@@ -325,13 +325,13 @@ def get_or_create_user(user_data):
     )
     
     profile, _ = UserProfile.objects.get_or_create(
-        user=user,
-        defaults={
-            'username': user_data['username'],
-            'name': user_data['name'],
-            'image': user_data['image']
-        }
-    )
+    username=user_data['username'],
+    defaults={
+        'name': user_data['name'],
+        'image': user_data['image']
+    }
+)
+
     return profile
 
 
