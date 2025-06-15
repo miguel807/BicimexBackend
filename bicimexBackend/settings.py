@@ -26,11 +26,18 @@ SECRET_KEY = 'django-insecure-o)&82#mxx95gu4$1lsk&ddl9x7q+60zh_l^i)qoi85@z09!kr6
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['*']
-CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOW_ALL_ORIGINS = True 
-SESSION_COOKIE_SAMESITE = 'None'
-# Application definition
+ALLOWED_HOSTS = [
+    'bicimexbackend.onrender.com',
+    'endearing-frangollo-3ce1a6.netlify.app',
+    'localhost',  # Opcional para entorno local
+    '127.0.0.1',  # Opcional también
+]
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5174",
+    "https://endearing-frangollo-3ce1a6.netlify.app",  
+    "https://bicimexbackend.onrender.com"  
+]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -40,7 +47,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'comments',
-     "corsheaders",
+    "corsheaders",
     'rest_framework'
 
 ]
@@ -56,10 +63,6 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
    
-]
-
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5174",
 ]
 
 ROOT_URLCONF = 'bicimexBackend.urls'
